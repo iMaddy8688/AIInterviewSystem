@@ -8,7 +8,17 @@
     {
         public class StudentModel
         {
-            public Guid StudentId { get; set; }
+            private StudentModel() { }
+            public StudentModel(string rollNumber, string fullName, string passwordHash, string batch, string email)
+            {
+                RollNumber = rollNumber;
+                FullName = fullName;
+                PasswordHash = passwordHash;
+                Batch = batch;
+                Email = email;
+            }
+
+           public Guid StudentId { get; set; }
             public string RollNumber { get; set; } = "";
             public string FullName { get; set; } = "";
             public string PasswordHash { get; set; } = "";
@@ -17,7 +27,7 @@
             public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
             public bool IsActive { get; set; } = true;
-            public bool IsDeleted { get; set; }
+            public bool IsDeleted { get; set; }=false;  
             public string ProfilePictureUrl { get; set; } = ""; 
             public ICollection<InterviewSessionModels> Sessions { get; set; } = [];
             //public ICollection<ResumeAnalysis> Resumes { get; set; } = [];

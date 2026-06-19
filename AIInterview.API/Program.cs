@@ -1,20 +1,28 @@
 using AIInterview.API.Data;
+using AIInterview.API.ServiceConfig;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Add services
+builder.Services.AddControllers();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 builder.Services.ConnectionConfig(builder.Configuration);
+builder.Services.ConfigureServices();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseHttpsRedirection();
-app.Run();
 
+app.UseHttpsRedirection();
+
+app.MapControllers();
+
+app.Run();
