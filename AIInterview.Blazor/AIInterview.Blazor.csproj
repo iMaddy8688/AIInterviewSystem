@@ -15,4 +15,8 @@
     <ProjectReference Include="..\AIInterview.Shared\AIInterview.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Layout\" />
+  </ItemGroup>
+
 </Project>

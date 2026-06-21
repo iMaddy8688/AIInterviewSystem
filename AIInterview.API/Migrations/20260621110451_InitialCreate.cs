@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AIInterview.API.Migrations
 {
     /// <inheritdoc />
-    public partial class @new : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,17 +32,19 @@ namespace AIInterview.API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TopicModel",
+                name: "Topic",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Icon = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Icon = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SortOrder = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TopicModel", x => x.Id);
+                    table.PrimaryKey("PK_Topic", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -126,15 +128,19 @@ namespace AIInterview.API.Migrations
                     QuestionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Level = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TopicId = table.Column<int>(type: "int", nullable: false)
+                    TopicId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModelAnswer = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TimeLimit = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Question", x => x.QuestionId);
                     table.ForeignKey(
-                        name: "FK_Question_TopicModel_TopicId",
+                        name: "FK_Question_Topic_TopicId",
                         column: x => x.TopicId,
-                        principalTable: "TopicModel",
+                        principalTable: "Topic",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -278,6 +284,12 @@ namespace AIInterview.API.Migrations
                 name: "IX_StudentSubscription_StudentId",
                 table: "StudentSubscription",
                 column: "StudentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Topic_Name",
+                table: "Topic",
+                column: "Name",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -305,7 +317,7 @@ namespace AIInterview.API.Migrations
                 name: "Student");
 
             migrationBuilder.DropTable(
-                name: "TopicModel");
+                name: "Topic");
         }
     }
 }

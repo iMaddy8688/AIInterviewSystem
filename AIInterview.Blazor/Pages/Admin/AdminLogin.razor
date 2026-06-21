@@ -1,0 +1,94 @@
+﻿@page "/admin/login"
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+@if (Auth.IsLoggedIn && Auth.Role == "Admin")
+{
+    Nav.NavigateTo("/admin/dashboard");
+    return;
+}
+
+<div class="login-page">
+    <div class="blob" style="width:400px;height:400px;background:#10B981;top:-80px;left:-60px"></div>
+    <div class="blob" style="width:320px;height:320px;background:#0891B2;bottom:-60px;right:-40px"></div>
+
+    <div class="login-box">
+        <div class="login-top">
+            <div class="portal-tag tag-a">⚙️ Admin Portal</div>
+            <div class="login-icon login-icon-a" style="font-size:28px">⚙️</div>
+            <div class="login-title">Admin Panel</div>
+            <div class="login-sub">CDS Institute — Instructor Access Only</div>
+        </div>
+
+        <div class="login-body">
+            @if (ErrorMsg != null)
+            {
+                <div class="error-box">⚠️ @ErrorMsg</div>
+            }
+
+            <div class="fg">
+                <label class="fl">Admin Email / Roll Number</label>
+                <input class="fi fi-a"
+                       placeholder="admin@cdsinstitute.com"
+                       @bind="Email"
+                       @bind:event="oninput"
+                       @onkeydown="HandleKey"
+                       disabled="@Loading"
+                       style="border-color:var(--border2)" />
+            </div>
+
+            <div class="fg">
+                <label class="fl">Password</label>
+                <input class="fi fi-a"
+                       type="password"
+                       placeholder="••••••••"
+                       @bind="Password"
+                       @bind:event="oninput"
+                       @onkeydown="HandleKey"
+                       disabled="@Loading"
+                       style="border-color:var(--border2)" />
+            </div>
+
+            <button class="login-btn login-btn-a"
+                    @onclick="LoginAsync"
+                    disabled="@Loading">
+                @(Loading ? "Logging in…" : "Login to Admin Panel →")
+            </button>
+
+            <div class="login-hint" style="margin-top:14px">
+                This portal is restricted to authorized instructors only.
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    string Email = "";
+    string Password = "";
+    string? ErrorMsg;
+    bool Loading;
+
+    async Task LoginAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Email) ||
+            string.IsNullOrWhiteSpace(Password))
+        {
+            ErrorMsg = "Please fill all fields.";
+            return;
+        }
+
+        Loading = true; ErrorMsg = null;
+        StateHasChanged();
+
+        var (success, error) = await Auth.AdminLoginAsync(
+            Email.Trim(), Password);
+
+        if (success) Nav.NavigateTo("/admin/dashboard");
+        else { ErrorMsg = error; Loading = false; }
+    }
+
+    async Task HandleKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await LoginAsync();
+    }
+}

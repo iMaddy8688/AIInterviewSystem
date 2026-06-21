@@ -39,7 +39,7 @@ namespace AIInterview.Shared.DTOs
     // ── Question DTOs ──────────────────────────────────────────
     public record QuestionDto(
         Guid QuestionId,
-        int TopicId,
+        Guid TopicId,
         string TopicName,
         string Text,
         string Level,
@@ -57,7 +57,7 @@ namespace AIInterview.Shared.DTOs
 
     public record UpdateQuestionDto(
         Guid QuestionId,
-        int TopicId,
+        Guid TopicId,
         string Text,
         string Level,
         string? ModelAnswer,
@@ -77,6 +77,41 @@ namespace AIInterview.Shared.DTOs
         Guid TopicId,
         string Level,
         List<string> Questions
+    );
+    // Subject Category DTOs
+    public record SubjectCategoryDto(
+        int SubjectCategoryId,
+        string Name,
+        string Icon,
+        string Description,
+        bool IsActive
+    );
+
+    public record CreateSubjectCategoryDto(
+        string Name,
+        string Icon,
+        string Description
+    );
+
+    public record UpdateSubjectCategoryDto(
+        int SubjectCategoryId,
+        string Name,
+        string Icon,
+        string Description,
+        bool IsActive
+    );
+
+    // Enrollment DTOs
+    public record EnrollSubjectsDto(
+        List<int> SubjectCategoryIds  // student jo subjects select kare
+    );
+
+    public record MyEnrollmentDto(
+        int SubjectCategoryId,
+        string Name,
+        string Icon,
+        string Description,
+        DateTime EnrolledAt
     );
 
 

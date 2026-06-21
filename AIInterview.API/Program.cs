@@ -32,7 +32,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero
         };
     });
-
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowBlazor", policy =>
+            {
+                policy.AllowAnyOrigin()
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
+            });
+        });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IJwtService, JwtServiceRepository>();
 
@@ -82,6 +90,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthentication();   // ? pehle yeh
-app.UseAuthorization();    // ? phir yeh
+app.UseAuthorization();  // ? phir yeh
+app.UseCors("AllowBlazor");
 app.MapControllers();
 app.Run();

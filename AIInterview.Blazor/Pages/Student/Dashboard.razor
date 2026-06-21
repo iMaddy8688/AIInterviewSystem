@@ -1,0 +1,535 @@
+﻿@page "/student/dashboard"
+@inject AuthService  Auth
+@inject ApiService   Api
+@inject NavigationManager Nav
+@* Guard — login nahi hai toh login pe bhejo *@
+@if (!Auth.IsLoggedIn)
+{
+    Nav.NavigateTo("/student/login");
+    return;
+}
+
+@if (Loading)
+{
+    <div style="min-height:100vh;display:flex;align-items:center;
+                justify-content:center;background:var(--root)">
+        <div style="text-align:center">
+            <div class="spinner"></div>
+            <div style="margin-top:12px;color:var(--t2);font-size:13px">
+                Loading your dashboard…
+            </div>
+        </div>
+    </div>
+    return;
+}
+
+<div class="layout">
+
+    @* ── SIDEBAR ─────────────────────────────────────────── *@
+    <aside class="sidebar">
+        <div class="sb-logo">
+            <div class="sb-icon sb-icon-s">🎓</div>
+            <div>
+                <div class="sb-title">AIInterview</div>
+                <div class="sb-sub">Student Portal</div>
+            </div>
+        </div>
+
+        <nav class="sb-nav">
+            <div class="sb-section">Main</div>
+            <div class="ni on-s">
+                <span class="ni-icon">🏠</span> Dashboard
+            </div>
+            <div class="ni" @onclick='() => Nav.NavigateTo("/student/interview/1/HR")'>
+                <span class="ni-icon">🤝</span> HR Round
+            </div>
+            <div class="ni" @onclick='() => Nav.NavigateTo("/student/interview/2/DotNet")'>
+                <span class="ni-icon">⚡</span> .NET Technical
+            </div>
+            <div class="ni" @onclick='() => Nav.NavigateTo("/student/interview/3/SQL")'>
+                <span class="ni-icon">🗄️</span> SQL Technical
+            </div>
+            <div class="ni" @onclick='() => Nav.NavigateTo("/student/coding")'>
+                <span class="ni-icon">💻</span> Coding Round
+            </div>
+
+            <div class="sb-section">Tools</div>
+            <div class="ni">
+                <span class="ni-icon">📄</span> Resume Analysis
+            </div>
+            <div class="ni">
+                <span class="ni-icon">🗺️</span> Roadmap
+            </div>
+            <div class="ni" @onclick='() => Nav.NavigateTo("/student/history")'>
+                <span class="ni-icon">📊</span> History
+                @if (History.Any())
+                {
+                    <span class="ni-badge">@History.Count</span>
+                }
+            </div>
+        </nav>
+
+        <div class="sb-footer">
+            @* Profile section *@
+            <div style="padding:12px;background:var(--card2);
+                        border-radius:var(--rl);margin-bottom:10px;
+                        border:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:10px;
+                            margin-bottom:10px">
+                    @* Avatar with initials *@
+                    <div style="width:42px;height:42px;border-radius:50%;
+                                background:linear-gradient(135deg,var(--s1),#8B5CF6);
+                                display:flex;align-items:center;
+                                justify-content:center;font-size:15px;
+                                font-weight:800;color:#fff;flex-shrink:0">
+                        @Auth.Initials
+                    </div>
+                    <div style="flex:1;min-width:0">
+                        <div style="font-size:13px;font-weight:700;
+                                    color:var(--t1);white-space:nowrap;
+                                    overflow:hidden;text-overflow:ellipsis">
+                            @Auth.FullName
+                        </div>
+                        <div style="font-size:10px;color:var(--t3)">
+                            @Auth.RollNumber · @Auth.Batch
+                        </div>
+                    </div>
+                </div>
+                @* Mini stats *@
+                <div style="display:grid;grid-template-columns:1fr 1fr;
+                            gap:6px">
+                    <div style="background:var(--card);border-radius:var(--r);
+                                padding:7px;text-align:center;
+                                border:1px solid var(--border)">
+                        <div style="font-size:16px;font-weight:800;
+                                    color:var(--s3)">@TotalSessions</div>
+                                    <div style="font-size:10px;color:var(--t3)">Sessions</div>
+                                </div>
+                                <div style="background:var(--card);border-radius:var(--r);
+                                padding:7px;text-align:center;
+                                border:1px solid var(--border)">
+                                    <div style="font-size:16px;font-weight:800;
+                                    color:@AvgScoreColor">@AvgScore%</div>
+                                    <div style="font-size:10px;color:var(--t3)">Avg Score</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="user-pill" @onclick="Logout">
+                            <div class="uav uav-s">@Auth.Initials</div>
+                            <div class="u-info">
+                                <div class="u-name">Logout</div>
+                                <div class="u-role">Click to sign out</div>
+                            </div>
+                            <span style="color:var(--t3);font-size:12px">→</span>
+                        </div>
+                    </div>
+                </aside>
+
+                @* ── MAIN CONTENT ────────────────────────────────────── *@
+                <div class="main">
+
+                    @* Topbar *@
+                    <div class="topbar">
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div class="tb-title">Dashboard</div>
+                        </div>
+                        <div class="tb-r">
+                            <div style="font-size:12px;color:var(--t3)">
+                                @DateTime.Now.ToString("dddd, dd MMM yyyy")
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="body">
+
+                        @* ── Welcome ─────────────────────────────────── *@
+                        <div style="margin-bottom:20px">
+                            <div class="pg-title">
+                                Namaste, @FirstName! 👋
+                            </div>
+                            <div class="pg-sub">
+                                @WelcomeMessage
+                            </div>
+                        </div>
+
+                        @* ── Stats Row ───────────────────────────────── *@
+                        <div class="stats" style="margin-bottom:20px">
+                            <div class="stat">
+                                <div class="stat-bar"
+                                     style="background:linear-gradient(90deg,var(--s1),#8B5CF6)">
+                                </div>
+                                <div class="stat-label">Total Sessions</div>
+                                <div class="stat-val">@TotalSessions</div>
+                                <div class="stat-ch">Completed interviews</div>
+                            </div>
+
+                            <div class="stat">
+                                <div class="stat-bar"
+                                     style="background:var(--green)"></div>
+                                <div class="stat-label">Average Score</div>
+                                <div class="stat-val" style="color:@AvgScoreColor">
+                                    @AvgScore%
+                                </div>
+                                <div class="stat-ch">
+                                    @(AvgScore >= 70 ? "Good performance!" :
+                          AvgScore >= 50 ? "Keep practicing" :
+                          "Needs improvement")
+                                </div>
+                            </div>
+
+                            <div class="stat">
+                                <div class="stat-bar"
+                                     style="background:var(--amber)"></div>
+                                <div class="stat-label">Best Round</div>
+                                <div class="stat-val" style="font-size:18px">
+                                    @(BestRound ?? "—")
+                                </div>
+                                <div class="stat-ch">
+                                    @(BestScore > 0 ? $"Score: {BestScore}%" : "No sessions yet")
+                                </div>
+                            </div>
+
+                            <div class="stat">
+                                <div class="stat-bar"
+                                     style="background:var(--red)"></div>
+                                <div class="stat-label">Weak Area</div>
+                                <div class="stat-val" style="font-size:18px">
+                                    @(WeakRound ?? "—")
+                                </div>
+                                <div class="stat-ch" style="color:@(WeakRound != null ? "var(--red)" : "var(--t3)")">
+                                    @(WeakScore > 0 ? $"Score: {WeakScore}%" : "Give more interviews")
+                                </div>
+                            </div>
+                        </div>
+
+                        @* ── How it works strip ──────────────────────── *@
+                        <div class="how" style="margin-bottom:20px">
+                            <div class="h-step">
+                                <div class="h-num h-num-s">1</div>
+                                <div class="h-text">🔊 AI asks question</div>
+                            </div>
+                            <div class="h-arr">›</div>
+                            <div class="h-step">
+                                <div class="h-num h-num-s">2</div>
+                                <div class="h-text">🎤 You speak answer</div>
+                            </div>
+                            <div class="h-arr">›</div>
+                            <div class="h-step">
+                                <div class="h-num h-num-s">3</div>
+                                <div class="h-text">📹 Webcam monitors</div>
+                            </div>
+                            <div class="h-arr">›</div>
+                            <div class="h-step">
+                                <div class="h-num h-num-s">4</div>
+                                <div class="h-text">🤖 Gemini AI evaluates</div>
+                            </div>
+                            <div class="h-arr">›</div>
+                            <div class="h-step">
+                                <div class="h-num h-num-s">5</div>
+                                <div class="h-text">📈 Score + feedback</div>
+                            </div>
+                        </div>
+
+                        @* ── Interview Rounds ────────────────────────── *@
+                        <div style="font-size:13px;font-weight:700;
+                        color:var(--t1);margin-bottom:10px">
+                            Interview Rounds
+                        </div>
+
+                        <div class="modules" style="margin-bottom:20px">
+                            @foreach (var round in Rounds)
+                            {
+                                <div class="mod mod-s"
+                                     @onclick="() => Nav.NavigateTo(round.Url)"
+                                     style="@(round.IsWeak ? "border-color:var(--red)" : "")">
+                                    <div class="mod-icon" style="background:@round.IconBg">
+                                        @round.Icon
+                                    </div>
+                                    <div class="mod-name">@round.Name</div>
+                                    <div class="mod-desc">@round.Desc</div>
+                                    <div style="display:flex;align-items:center;
+                                    justify-content:space-between">
+                                        @if (round.IsWeak)
+                                        {
+                                            <span class="badge b-red">Weak area</span>
+                                        }
+                                        else if (round.IsBest)
+                                        {
+                                            <span class="badge b-green">Best round</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge b-gray">Practice</span>
+                                        }
+                                        @if (round.LastScore > 0)
+                                        {
+                                            <span style="font-size:11px;
+                                             color:@GetScoreColor(round.LastScore)">
+                                                Last: @round.LastScore%
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        @* ── Bottom: Recent + Quick Actions ─────────── *@
+                        <div class="two">
+
+                            @* Recent Sessions *@
+                            <div class="card">
+                                <div style="display:flex;justify-content:space-between;
+                                align-items:center;margin-bottom:14px">
+                                    <div style="font-size:14px;font-weight:700">
+                                        My Recent Sessions
+                                    </div>
+                                    <button class="btn btn-ghost btn-xs"
+                                            @onclick='() => Nav.NavigateTo("/student/history")'>
+                                        View all
+                                    </button>
+                                </div>
+
+                                @if (!History.Any())
+                                {
+                                    <div style="text-align:center;padding:24px;
+                                    color:var(--t3);font-size:13px">
+                                        <div style="font-size:32px;margin-bottom:8px">🎤</div>
+                                        No sessions yet.<br />Start your first interview!
+                                    </div>
+                                }
+                                else
+                                {
+                                    @foreach (var h in History.Take(4))
+                                    {
+                                        <div style="display:flex;align-items:center;
+                                        gap:11px;padding:10px 0;
+                                        border-bottom:1px solid var(--border)">
+                                            <div style="width:8px;height:8px;border-radius:50%;
+                                            flex-shrink:0;
+                                            background:@GetScoreColor(h.TotalScore)">
+                                            </div>
+                                            <div style="flex:1">
+                                                <div style="font-size:13px;color:var(--t1);
+                                                font-weight:500">
+                                                    @GetRoundIcon(h.RoundType) @h.RoundType Round
+                                                    @if (h.CheatFlagged)
+                                                    {
+                                                        <span class="badge b-amber"
+                                                              style="margin-left:6px;font-size:10px">
+                                                            ⚠️ Flagged
+                                                        </span>
+                                                    }
+                                                </div>
+                                                <div style="font-size:11px;color:var(--t3)">
+                                                    @h.Level · @h.CompletedAt.ToString("dd MMM, hh:mm tt")
+                                                </div>
+                                            </div>
+                                            <span class="badge @GetScoreBadge(h.TotalScore)">
+                                                @h.TotalScore%
+                                            </span>
+                                        </div>
+                                    }
+                                }
+                            </div>
+
+                            @* Quick Actions + Tip *@
+                            <div style="display:flex;flex-direction:column;gap:12px">
+                                <div class="card">
+                                    <div style="font-size:14px;font-weight:700;
+                                    margin-bottom:12px">Quick Actions</div>
+
+                                    <div style="display:flex;flex-direction:column;gap:6px">
+                                        <div style="display:flex;align-items:center;gap:11px;
+                                        padding:10px;border-radius:var(--r);
+                                        background:var(--card2);cursor:pointer;
+                                        transition:background .15s"
+                                             @onclick='() => Nav.NavigateTo("/student/resume")'>
+                                            <div style="width:34px;height:34px;border-radius:9px;
+                                            background:var(--sbg);display:flex;
+                                            align-items:center;justify-content:center;
+                                            font-size:16px">📄</div>
+                                            <div>
+                                                <div style="font-size:13px;font-weight:600;
+                                                color:var(--t1)">Upload Resume</div>
+                                                <div style="font-size:11px;color:var(--t3)">
+                                                    AI skills & gap analysis
+                                                </div>
+                                            </div>
+                                            <span style="margin-left:auto;color:var(--t3)">›</span>
+                                        </div>
+
+                                        <div style="display:flex;align-items:center;gap:11px;
+                                        padding:10px;border-radius:var(--r);
+                                        background:var(--card2);cursor:pointer"
+                                             @onclick='() => Nav.NavigateTo("/student/roadmap")'>
+                                            <div style="width:34px;height:34px;border-radius:9px;
+                                            background:var(--green-bg);display:flex;
+                                            align-items:center;justify-content:center;
+                                            font-size:16px">🗺️</div>
+                                            <div>
+                                                <div style="font-size:13px;font-weight:600;
+                                                color:var(--t1)">Learning Roadmap</div>
+                                                <div style="font-size:11px;color:var(--t3)">
+                                                    AI 4-week study plan
+                                                </div>
+                                            </div>
+                                            <span style="margin-left:auto;color:var(--t3)">›</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @* AI Tip based on performance *@
+                                <div style="padding:14px;background:var(--sbg);
+                                border-radius:var(--rl);
+                                border:1px solid var(--s1)">
+                                    <div style="font-size:11px;font-weight:700;
+                                    color:var(--s3);margin-bottom:5px">
+                                        💡 AI Tip for You
+                                    </div>
+                                    <div style="font-size:12px;color:var(--t2);
+                                    line-height:1.6">
+                                        @AiTip
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            @code {
+                bool Loading = true;
+                List<SessionHistoryDto> History = [];
+
+                // Computed stats
+                int TotalSessions;
+                int AvgScore;
+                string? BestRound;
+                int BestScore;
+                string? WeakRound;
+                int WeakScore;
+                string FirstName => Auth.FullName?.Split(' ').FirstOrDefault() ?? "Student";
+                string AvgScoreColor => AvgScore >= 70 ? "var(--green)"
+                                       : AvgScore >= 50 ? "var(--amber)"
+                                       : AvgScore > 0 ? "var(--red)"
+                                       : "var(--t1)";
+                string WelcomeMessage => TotalSessions == 0
+                    ? "Welcome! Start your first interview to begin your practice journey."
+                    : $"You have completed {TotalSessions} sessions. Keep practicing!";
+
+                string AiTip => WeakRound != null
+                    ? $"Your {WeakRound} score is {WeakScore}%. Focus on this area — practice daily and check the Learning Roadmap."
+                    : TotalSessions == 0
+                    ? "Start with the HR Round first — it builds confidence for technical rounds."
+                    : "Consistency is key! Try to give at least one interview daily.";
+
+                // Round cards
+                record RoundCard(string Icon, string Name, string Desc,
+                                 string Url, string IconBg,
+                                 int LastScore, bool IsBest, bool IsWeak);
+
+                List<RoundCard> Rounds = [];
+
+                protected override async Task OnInitializedAsync()
+                {
+                    if (!Auth.IsLoggedIn)
+                    {
+                        Nav.NavigateTo("/student/login");
+                        return;
+                    }
+
+                    // Load student's own history
+                    History = await Api.GetMyHistoryAsync();
+
+                    // Calculate stats from THIS student's data only
+                    TotalSessions = History.Count;
+
+                    if (History.Any())
+                    {
+                        AvgScore = (int)History.Average(h => h.TotalScore);
+
+                        // Best round
+                        var best = History.OrderByDescending(h => h.TotalScore).First();
+                        BestRound = best.RoundType;
+                        BestScore = best.TotalScore;
+
+                        // Weak round (avg < 60)
+                        var byRound = History
+                            .GroupBy(h => h.RoundType)
+                            .Where(g => g.Count() >= 1)
+                            .Select(g => new
+                            {
+                                Round = g.Key,
+                                Avg = (int)g.Average(h => h.TotalScore)
+                            })
+                            .OrderBy(x => x.Avg)
+                            .FirstOrDefault();
+
+                        if (byRound != null && byRound.Avg < 60)
+                        {
+                            WeakRound = byRound.Round;
+                            WeakScore = byRound.Avg;
+                        }
+                    }
+
+                    // Build round cards with student's last score
+                    Rounds = BuildRoundCards();
+                    Loading = false;
+                }
+
+                List<RoundCard> BuildRoundCards()
+                {
+                    var roundDefs = new[]
+                    {
+            ("🤝", "HR Round",       "Behavioral & communication",  "/student/interview/1/HR",     "#1E3A5F"),
+            ("⚡", ".NET Technical", "C#, ASP.NET Core, EF Core",   "/student/interview/2/DotNet", "#1E1B4B"),
+            ("🗄️","SQL Technical",   "SQL Server, queries, EF Core", "/student/interview/3/SQL",    "#1C1917"),
+            ("💻", "Coding Round",   "Write C# code live",          "/student/coding",             "#064E3B"),
+        };
+
+                    return roundDefs.Select(r =>
+                    {
+                        var lastSession = History
+                            .Where(h => h.RoundType == r.Item1.Trim() ||
+                                        r.Item2.Contains(h.RoundType))
+                            .OrderByDescending(h => h.CompletedAt)
+                            .FirstOrDefault();
+
+                        var lastScore = lastSession?.TotalScore ?? 0;
+                        var isBest = BestRound != null &&
+                                        r.Item2.Contains(BestRound);
+                        var isWeak = WeakRound != null &&
+                                        r.Item2.Contains(WeakRound);
+
+                        return new RoundCard(r.Item1, r.Item2, r.Item3,
+                                             r.Item4, r.Item5,
+                                             lastScore, isBest, isWeak);
+                    }).ToList();
+                }
+
+                // ── Helpers ───────────────────────────────────────────────
+                string GetScoreColor(int score) =>
+                    score >= 70 ? "var(--green)" :
+                    score >= 50 ? "var(--amber)" : "var(--red)";
+
+                string GetScoreBadge(int score) =>
+                    score >= 70 ? "b-green" :
+                    score >= 50 ? "b-amber" : "b-red";
+
+                string GetRoundIcon(string round) => round switch
+                {
+                    "HR" => "🤝",
+                    "DotNet" => "⚡",
+                    "SQL" => "🗄️",
+                    "Coding" => "💻",
+                    _ => "🎤"
+                };
+
+                void Logout()
+                {
+                    Auth.Logout();
+                    Nav.NavigateTo("/student/login");
+                }
+            }

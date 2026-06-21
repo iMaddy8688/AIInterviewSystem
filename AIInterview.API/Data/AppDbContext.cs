@@ -20,6 +20,9 @@ namespace AIInterview.API.Data
         public DbSet<QuestionModels> Question=>Set<QuestionModels>();
         public DbSet<StudentRefreshTokenModel> StudentRefreshTokens => Set<StudentRefreshTokenModel>();
         public DbSet<TopicModel> Topic => Set<TopicModel>();
+        public DbSet<SubjectCategoryModel> SubjectCategories => Set<SubjectCategoryModel>();
+        public DbSet<StudentSubjectEnrollment> SubjectEnrollments => Set<StudentSubjectEnrollment>();
+
         protected override void OnModelCreating(ModelBuilder mb)
         {
             base.OnModelCreating(mb);
@@ -91,6 +94,25 @@ namespace AIInterview.API.Data
             mb.Entity<TopicModel>()
                 .HasIndex(t => t.Name)
                 .IsUnique();
+
+            mb.Entity<SubjectCategoryModel>().ToTable("SubjectCategory");
+            mb.Entity<SubjectCategoryModel>().HasKey(s => s.SubjectCategoryId);
+
+            mb.Entity<StudentSubjectEnrollment>().ToTable("StudentSubjectEnrollment");
+            mb.Entity<StudentSubjectEnrollment>().HasKey(s => s.EnrollmentId);
+            mb.Entity<StudentSubjectEnrollment>()
+                .HasOne(s => s.Student).WithMany()
+                .HasForeignKey(s => s.StudentId);
+            mb.Entity<StudentSubjectEnrollment>()
+                .HasOne(s => s.SubjectCategory).WithMany()
+                .HasForeignKey(s => s.SubjectCategoryId);
+
+            mb.Entity<SubjectCategoryModel>().HasData(
+    new SubjectCategoryModel { SubjectCategoryId = 1, Name = ".NET Full Stack", Icon = "⚡", IsActive = true },
+    new SubjectCategoryModel { SubjectCategoryId = 2, Name = "Java Full Stack", Icon = "☕", IsActive = true },
+    new SubjectCategoryModel { SubjectCategoryId = 3, Name = "Python", Icon = "🐍", IsActive = true },
+    new SubjectCategoryModel { SubjectCategoryId = 4, Name = "React Frontend", Icon = "⚛️", IsActive = true }
+);
         }
 
     }

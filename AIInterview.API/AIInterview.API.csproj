@@ -28,8 +28,4 @@
     <ProjectReference Include="..\AIInterview.Shared\AIInterview.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Migrations\" />
-  </ItemGroup>
-
 </Project>
