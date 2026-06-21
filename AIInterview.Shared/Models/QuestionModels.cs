@@ -11,7 +11,7 @@ namespace AIInterview.Shared.Models
         public Guid QuestionId { get; set; }
         public string Text { get; set; } = "";
         public string Level { get; set; } = "Intermediate";
-        public int TopicId { get; set; }
+        public Guid TopicId { get; set; }
         public TopicModel Topic { get; set; } = null!;
     }
 }

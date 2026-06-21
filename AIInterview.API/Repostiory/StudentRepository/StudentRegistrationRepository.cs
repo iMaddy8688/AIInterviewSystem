@@ -4,6 +4,7 @@ using AIInterview.API.Services.StudentService;
 using AIInterview.Shared.DTOs;
 using AIInterview.Shared.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace AIInterview.API.Repostiory.StudentRepository
 {
@@ -20,6 +21,13 @@ namespace AIInterview.API.Repostiory.StudentRepository
         public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default)
         {
             return await _dbContext.Students.AnyAsync(s => s.Email == email, cancellationToken);
+        }
+
+        public async Task<StudentModel?> ExistsByRollNoAsync(string RollNo, CancellationToken cancellationToken = default)
+        {
+            return await (_dbContext.Students.FirstOrDefaultAsync(x => x.RollNumber == RollNo, cancellationToken));
+
+            
         }
 
         public async Task<StudentRegisterResponce> StudentRegstration(StudentRegisterDto register, CancellationToken cancellationToken = default)

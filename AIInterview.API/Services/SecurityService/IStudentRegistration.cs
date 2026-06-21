@@ -1,4 +1,5 @@
 ﻿using AIInterview.Shared.DTOs;
+using AIInterview.Shared.Models;
 
 namespace AIInterview.API.Services.SecurityService
 {
@@ -6,5 +7,6 @@ namespace AIInterview.API.Services.SecurityService
     {
         Task<StudentRegisterResponce> StudentRegstration(StudentRegisterDto register, CancellationToken cancellationToken = default);
         Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default);
+        Task<StudentModel?> ExistsByRollNoAsync(string RollNo, CancellationToken cancellationToken = default);
     }
 }

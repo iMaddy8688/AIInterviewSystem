@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AIInterview.API.Migrations
 {
     /// <inheritdoc />
-    public partial class StudentMigrations : Migration
+    public partial class @new : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -73,6 +73,29 @@ namespace AIInterview.API.Migrations
                         column: x => x.StudentModelStudentId,
                         principalTable: "Student",
                         principalColumn: "StudentId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StudentRefreshToken",
+                columns: table => new
+                {
+                    RefreshTokenId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StudentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "bit", nullable: false),
+                    ReplacedByToken = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudentRefreshToken", x => x.RefreshTokenId);
+                    table.ForeignKey(
+                        name: "FK_StudentRefreshToken_Student_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Student",
+                        principalColumn: "StudentId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -241,6 +264,17 @@ namespace AIInterview.API.Migrations
                 column: "QuestionId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_StudentRefreshToken_StudentId_IsRevoked",
+                table: "StudentRefreshToken",
+                columns: new[] { "StudentId", "IsRevoked" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentRefreshToken_Token",
+                table: "StudentRefreshToken",
+                column: "Token",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StudentSubscription_StudentId",
                 table: "StudentSubscription",
                 column: "StudentId");
@@ -254,6 +288,9 @@ namespace AIInterview.API.Migrations
 
             migrationBuilder.DropTable(
                 name: "StudentAnswer");
+
+            migrationBuilder.DropTable(
+                name: "StudentRefreshToken");
 
             migrationBuilder.DropTable(
                 name: "StudentSubscription");

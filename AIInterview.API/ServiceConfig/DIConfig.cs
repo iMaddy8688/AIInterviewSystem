@@ -2,6 +2,8 @@
 using AIInterview.API.Services.StudentService;
 using AIInterview.API.Repostiory.Security;
 using AIInterview.API.Repostiory.StudentRepository;
+using AIInterview.API.Services.QuestionService;
+using AIInterview.API.Repostiory.QuestionRepository;
 
 namespace AIInterview.API.ServiceConfig
 {
@@ -14,6 +16,12 @@ namespace AIInterview.API.ServiceConfig
 
             services.AddScoped<IStudentRegistration, StudentRegistrationRepository>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
+            services.AddScoped<IJwtService, JwtServiceRepository>();
+            services.AddScoped<IRefreshToken, RefreshTokenRepository>();
+            services.AddScoped<ITopicService, TopicRepository>();
+
+
+
             return services;
         }
     }

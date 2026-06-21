@@ -1,4 +1,5 @@
 ﻿using AIInterview.Shared.Models;
+using AIInterview.Shared.Models.SecurityModel;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -17,6 +18,8 @@ namespace AIInterview.API.Data
         public DbSet<StudentAnswerModel> StudentAnswer => Set<StudentAnswerModel>();
         public DbSet<CheatEventModel> CheatEvent=> Set<CheatEventModel>();
         public DbSet<QuestionModels> Question=>Set<QuestionModels>();
+        public DbSet<StudentRefreshTokenModel> StudentRefreshTokens => Set<StudentRefreshTokenModel>();
+        public DbSet<TopicModel> Topic => Set<TopicModel>();
         protected override void OnModelCreating(ModelBuilder mb)
         {
             base.OnModelCreating(mb);
@@ -67,7 +70,27 @@ namespace AIInterview.API.Data
             // Question Model Configuration
             mb.Entity<QuestionModels>().ToTable("Question");
             mb.Entity<QuestionModels>().HasKey(s => s.QuestionId);
-            
+
+            // Student Refresh Token Model Configuration
+            mb.Entity<StudentRefreshTokenModel>().ToTable("StudentRefreshToken");
+            mb.Entity<StudentRefreshTokenModel>().HasKey(r => r.RefreshTokenId);
+            mb.Entity<StudentRefreshTokenModel>()
+                .HasOne(r => r.Student)
+                .WithMany()
+                .HasForeignKey(r => r.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+            mb.Entity<StudentRefreshTokenModel>()
+                .HasIndex(r => r.Token)
+                .IsUnique();
+            mb.Entity<StudentRefreshTokenModel>()
+                .HasIndex(r => new { r.StudentId, r.IsRevoked });
+
+            // Topic
+            mb.Entity<TopicModel>().ToTable("Topic");
+            mb.Entity<TopicModel>().HasKey(t => t.Id);
+            mb.Entity<TopicModel>()
+                .HasIndex(t => t.Name)
+                .IsUnique();
         }
 
     }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AIInterview.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260618083925_StudentMigrations")]
-    partial class StudentMigrations
+    [Migration("20260620110718_new")]
+    partial class @new
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -115,6 +115,41 @@ namespace AIInterview.API.Migrations
                     b.HasIndex("TopicId");
 
                     b.ToTable("Question", (string)null);
+                });
+
+            modelBuilder.Entity("AIInterview.Shared.Models.SecurityModel.StudentRefreshTokenModel", b =>
+                {
+                    b.Property<Guid>("RefreshTokenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ReplacedByToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("RefreshTokenId");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("StudentId", "IsRevoked");
+
+                    b.ToTable("StudentRefreshToken", (string)null);
                 });
 
             modelBuilder.Entity("AIInterview.Shared.Models.StudentAnswerModel", b =>
@@ -300,6 +335,17 @@ namespace AIInterview.API.Migrations
                         .IsRequired();
 
                     b.Navigation("Topic");
+                });
+
+            modelBuilder.Entity("AIInterview.Shared.Models.SecurityModel.StudentRefreshTokenModel", b =>
+                {
+                    b.HasOne("AIInterview.Shared.Models.StudentModel", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("AIInterview.Shared.Models.StudentAnswerModel", b =>
