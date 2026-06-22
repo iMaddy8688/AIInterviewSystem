@@ -1,31 +1,37 @@
 ﻿@page "/student/login"
 @inject AuthService Auth
+@inject ApiService Api
 @inject NavigationManager Nav
-@* Redirect if already logged in *@
-@if (Auth.IsLoggedIn && Auth.Role == "Student")
+
+@if (Auth.IsLoggedIn)
 {
     Nav.NavigateTo("/student/dashboard");
     return;
 }
 
 <div class="login-page">
-    <div class="blob" style="width:450px;height:450px;background:#6366F1;top:-100px;left:-100px"></div>
-    <div class="blob" style="width:350px;height:350px;background:#8B5CF6;bottom:-80px;right:-60px"></div>
+    <div class="blob"
+         style="width:450px;height:450px;background:#6366F1;
+                top:-100px;left:-100px"></div>
+    <div class="blob"
+         style="width:350px;height:350px;background:#8B5CF6;
+                bottom:-80px;right:-60px"></div>
 
     <div class="login-box">
         <div class="login-top">
             <div class="portal-tag tag-s">🎓 Student Portal</div>
-            <div class="login-icon login-icon-s" style="font-size:28px">🎓</div>
+            <div class="login-icon login-icon-s"
+                 style="font-size:28px">🎓</div>
             <div class="login-title">AI Interview System</div>
-            <div class="login-sub">CDS Coding Institute — .NET Full Stack</div>
+            <div class="login-sub">
+                CDS Coding Institute — .NET Full Stack
+            </div>
         </div>
 
         <div class="login-body">
             @if (ErrorMsg != null)
             {
-                <div class="error-box">
-                    ⚠️ @ErrorMsg
-                </div>
+                <div class="error-box">⚠️ @ErrorMsg</div>
             }
 
             <div class="fg">
@@ -40,17 +46,22 @@
 
             <div class="fg">
                 <label class="fl">Password</label>
-                <input class="fi"
-                       type="@(ShowPass ? "text" : "password")"
-                       placeholder="••••••••"
-                       @bind="Password"
-                       @bind:event="oninput"
-                       @onkeydown="HandleKey"
-                       disabled="@Loading" />
-                <div style="margin-top:5px;cursor:pointer;font-size:11px;
-                            color:var(--t3);text-align:right"
-                     @onclick="() => ShowPass = !ShowPass">
-                    @(ShowPass ? "🙈 Hide" : "👁 Show") password
+                <div style="position:relative">
+                    <input class="fi"
+                           type="@(ShowPass ? "text" : "password")"
+                           placeholder="••••••••"
+                           @bind="Password"
+                           @bind:event="oninput"
+                           @onkeydown="HandleKey"
+                           disabled="@Loading" />
+                    <button @onclick="() => ShowPass = !ShowPass"
+                            style="position:absolute;right:12px;top:50%;
+                                   transform:translateY(-50%);
+                                   background:none;border:none;
+                                   color:var(--t3);cursor:pointer;
+                                   font-size:14px">
+                        @(ShowPass ? "🙈" : "👁")
+                    </button>
                 </div>
             </div>
 
@@ -59,7 +70,16 @@
                     disabled="@Loading">
                 @if (Loading)
                 {
-                    <span>Logging in…</span>
+                    <span style="display:flex;align-items:center;
+                                 justify-content:center;gap:8px">
+                        <span style="width:16px;height:16px;
+                                     border:2px solid #ffffff40;
+                                     border-top-color:#fff;
+                                     border-radius:50%;
+                                     animation:spin .8s linear infinite;
+                                     display:inline-block"></span>
+                        Logging in…
+                    </span>
                 }
                 else
                 {
@@ -67,22 +87,15 @@
                 }
             </button>
 
-            <div class="login-hint" style="margin-top:14px">
-                Forgot password? Contact your instructor
-            </div>
+            
 
-            @* Demo credentials hint *@
-            <div style="margin-top:12px;padding:10px 12px;
-                        background:var(--sbg);border-radius:var(--r);
-                        border:1px solid var(--s1)">
-                <div style="font-size:11px;font-weight:700;
-                            color:var(--s3);margin-bottom:3px">
-                    Demo Login
-                </div>
-                <div style="font-size:11px;color:var(--t2)">
-                    Roll: <b style="color:var(--t1)">S001</b> &nbsp;
-                    Pass: <b style="color:var(--t1)">pass123</b>
-                </div>
+            <div style="text-align:center;margin-top:12px;
+                        font-size:11px;color:var(--t3)">
+                Admin?
+                <span style="color:var(--s3);cursor:pointer"
+                      @onclick='() => Nav.NavigateTo("/admin/login")'>
+                    Login here
+                </span>
             </div>
         </div>
     </div>
@@ -97,34 +110,35 @@
 
     async Task LoginAsync()
     {
-        // Validation
-        if (string.IsNullOrWhiteSpace(RollNumber))
+        if (string.IsNullOrWhiteSpace(RollNumber) ||
+            string.IsNullOrWhiteSpace(Password))
         {
-            ErrorMsg = "Please enter your roll number.";
-            return;
-        }
-        if (string.IsNullOrWhiteSpace(Password))
-        {
-            ErrorMsg = "Please enter your password.";
+            ErrorMsg = "Please fill all fields.";
             return;
         }
 
-        Loading = true;
-        ErrorMsg = null;
+        Loading = true; ErrorMsg = null;
         StateHasChanged();
 
         var (success, error) = await Auth.StudentLoginAsync(
             RollNumber.Trim(), Password);
 
-        if (success)
-        {
-            Nav.NavigateTo("/student/dashboard");
-        }
-        else
+        if (!success)
         {
             ErrorMsg = error;
             Loading = false;
+            return;
         }
+
+        // ← Token explicitly set karo pehle
+        Auth.SetAuthHeader();
+
+        // Ab check karo
+        var hasEnrollment = await Api.HasEnrollmentAsync();
+
+        Nav.NavigateTo(hasEnrollment
+            ? "/student/dashboard"
+            : "/student/select-subjects");
     }
 
     async Task HandleKey(KeyboardEventArgs e)

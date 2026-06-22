@@ -15,7 +15,8 @@ namespace AIInterview.Blazor.Services
         }
 
         private void SetAuth() => _auth.SetAuthHeader();
-        // ── Student: Get my profile ───────────────────────────────
+
+        // ── Profile ───────────────────────────────────────────────
         public async Task<StudentProfileDto?> GetMyProfileAsync()
         {
             SetAuth();
@@ -26,6 +27,8 @@ namespace AIInterview.Blazor.Services
             }
             catch { return null; }
         }
+
+        // ── Interview History ─────────────────────────────────────
         public async Task<List<SessionHistoryDto>> GetMyHistoryAsync()
         {
             SetAuth();
@@ -36,7 +39,8 @@ namespace AIInterview.Blazor.Services
             }
             catch { return []; }
         }
-        // ── Topics list ───────────────────────────────────────────
+
+        // ── Topics ────────────────────────────────────────────────
         public async Task<List<TopicDto>> GetTopicsAsync()
         {
             SetAuth();
@@ -48,6 +52,7 @@ namespace AIInterview.Blazor.Services
             catch { return []; }
         }
 
+        // ── Question Count ────────────────────────────────────────
         public async Task<int> GetQuestionCountAsync(int topicId, string level)
         {
             SetAuth();
@@ -59,21 +64,81 @@ namespace AIInterview.Blazor.Services
             }
             catch { return 0; }
         }
+
+        // ── Subject Categories ────────────────────────────────────
+        public async Task<List<SubjectCategoryDto>> GetSubjectCategoriesAsync()
+        {
+            SetAuth();
+            try
+            {
+                return await _http.GetFromJsonAsync<List<SubjectCategoryDto>>(
+                    "api/subjectcategory") ?? [];
+            }
+            catch { return []; }
+        }
+
+        // ── My Enrolled Subjects ──────────────────────────────────
+        public async Task<List<MyEnrollmentDto>> GetMySubjectsAsync()
+        {
+            SetAuth();
+            try
+            {
+                return await _http.GetFromJsonAsync<List<MyEnrollmentDto>>(
+                    "api/student/enrollment/my-subjects") ?? [];
+            }
+            catch { return []; }
+        }
+
+        // ── Enroll Subjects ───────────────────────────────────────
+        public async Task<bool> EnrollSubjectsAsync(List<int> subjectIds)
+        {
+            SetAuth();
+            try
+            {
+                var res = await _http.PostAsJsonAsync(
+                    "api/student/enrollment/enroll",
+                    new { subjectCategoryIds = subjectIds });
+                return res.IsSuccessStatusCode;
+            }
+            catch { return false; }
+        }
+
+        // ── Has Enrollment Check ──────────────────────────────────
+        public async Task<bool> HasEnrollmentAsync()
+        {
+            SetAuth();
+            try
+            {
+                var res = await _http.GetFromJsonAsync<HasEnrollmentResponse>(
+                    "student/enrollment/has-enrollment");
+                return res?.HasEnrollment ?? false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"HasEnrollment error: {ex.Message}");
+                return false;
+            }
+        }
     }
+
+    // ── DTOs ──────────────────────────────────────────────────────
     public record StudentProfileDto(
-                    string StudentId,
-                    string RollNumber,
-                    string FullName
-                );
+        string StudentId,
+        string RollNumber,
+        string FullName
+    );
 
     public record SessionHistoryDto(
-  Guid SessionId,
-  string RoundType,
-  string Level,
-  int TotalScore,
-  bool CheatFlagged,
-  DateTime CompletedAt);
+        Guid SessionId,
+        string RoundType,
+        string Level,
+        int TotalScore,
+        bool CheatFlagged,
+        DateTime CompletedAt
+    );
+
     public record QuestionCountDto(int Count);
 
+    // Internal response models
+    file record HasEnrollmentResponse(bool HasEnrollment);
 }
-

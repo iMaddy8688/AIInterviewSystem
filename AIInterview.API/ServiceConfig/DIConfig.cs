@@ -19,7 +19,8 @@ namespace AIInterview.API.ServiceConfig
             services.AddScoped<IJwtService, JwtServiceRepository>();
             services.AddScoped<IRefreshToken, RefreshTokenRepository>();
             services.AddScoped<ITopicService, TopicRepository>();
-
+            services.AddScoped<ISubjectCategoryServices, SubjectCategoryRepository>();
+            services.AddScoped<IStudentEnrollmentService, StudentEnrollmentRepository>();
 
 
             return services;
